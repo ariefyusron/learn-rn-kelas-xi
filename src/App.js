@@ -12,7 +12,10 @@ class App extends Component {
       isErrorHeader: false,
       isLoadingList: true,
       list: [],
-      isErrorList: false
+      isErrorList: false,
+      title: "",
+      body: "",
+      isLoadingSubmit: false
     };
   }
 
@@ -28,7 +31,7 @@ class App extends Component {
       });
 
     axios
-      .get("https://jsonplaceholder.typicode.com/users")
+      .get("https://jsonplaceholder.typicode.com/posts")
       .then(res => {
         console.log(res.data);
         this.setState({ isLoadingList: false, list: res.data });
@@ -51,19 +54,64 @@ class App extends Component {
     return result;
   }
 
+  handleSubmit() {
+    this.setState({ isLoadingSubmit: true });
+    axios
+      .post("https://jsonplaceholder.typicode.com/posts", {
+        title: this.state.title,
+        body: this.state.body,
+        userId: 1
+      })
+      .then(res => {
+        this.setState({
+          isLoadingSubmit: false,
+          list: [res.data, ...this.state.list],
+          body: "",
+          title: ""
+        });
+      })
+      .catch(err => {
+        console.log(err);
+        this.setState({ isLoadingSubmit: false });
+      });
+  }
+
   render() {
     return (
       <div>
         <Header title={this.titleHeader()} />
+
+        <div>
+          <input
+            placeholder="title"
+            type="text"
+            onChange={res => {
+              this.setState({ title: res.target.value });
+            }}
+            value={this.state.title}
+          />
+          <input
+            placeholder="body"
+            type="text"
+            onChange={res => {
+              this.setState({ body: res.target.value });
+            }}
+            value={this.state.body}
+          />
+          <button onClick={() => this.handleSubmit()}>
+            {this.state.isLoadingSubmit ? "Loading" : "Add"}
+          </button>
+        </div>
+
         {this.state.isLoadingList ? (
           <p>Loading</p>
         ) : (
           this.state.list.map((item, index) => {
             return (
               <div key={index}>
-                <p>{item.name}</p>
-                <p>{item.username}</p>
-                <p>{item.email}</p>
+                <p>{item.userId}</p>
+                <p>{item.title}</p>
+                <p>{item.body}</p>
                 <p>----------------------</p>
               </div>
             );
